@@ -3,19 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
-
-type Article struct {
-	Title   string `json:"Title"`
-	Desc    string `json:"desc"`
-	Content string `json:"content"` 
-}
-
-type Articles []Article
 
 var articles Articles
 
@@ -29,30 +21,42 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Homepage")
 }
 
+func deleteArticle(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	articleId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Please insert the correct article Id", 400)
+		return
+	}
+
+	var tempArticles Articles
+	for i := range articles {
+		if articles[i].Id != articleId {
+			tempArticles = append(tempArticles, articles[i])
+		}
+	}
+
+	articles = tempArticles
+
+}
+
 func createArticle(w http.ResponseWriter, r *http.Request) {
 	var article Article
 	if r.Body == nil {
 		http.Error(w, "Please send a request body", 400)
 		return
 	}
+
 	err := json.NewDecoder(r.Body).Decode(&article)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
+	article.Id = len(articles) + 1
 	articles = append(articles, article)
 
 	json.NewEncoder(w).Encode(article)
-}
-
-func handlerRequest() {
-	myRouter := mux.NewRouter().StrictSlash(true)
-
-	myRouter.HandleFunc("/", homePage)
-	myRouter.HandleFunc("/articles", allArticles).Methods("GET")
-	myRouter.HandleFunc("/articles", createArticle).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8081", myRouter))
 }
 
 func main() {
