@@ -26,6 +26,7 @@ func getArticle(w http.ResponseWriter, r *http.Request) {
 	for i := range articles {
 		if articles[i].Id == articleId {
 			json.NewEncoder(w).Encode(articles[i])
+			return
 		}
 	}
 }
@@ -72,6 +73,36 @@ func createArticle(w http.ResponseWriter, r *http.Request) {
 	articles = append(articles, article)
 
 	json.NewEncoder(w).Encode(article)
+}
+
+func updateArticle(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	articleId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Please insert the correct article Id", 400)
+		return
+	}
+
+	if r.Body == nil {
+		http.Error(w, "Please send a request body", 400)
+		return
+	}
+	var article Article
+	err = json.NewDecoder(r.Body).Decode(&article)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	for i := range articles {
+		if articles[i].Id == articleId {
+			articles[i].Title = article.Title
+			articles[i].Desc = article.Content
+			articles[i].Content = article.Content
+
+			return
+		}
+	}
 }
 
 func main() {
