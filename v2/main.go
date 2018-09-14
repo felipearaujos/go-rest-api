@@ -37,12 +37,18 @@ func createArticle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(article)
 }
 
+func allArticles(w http.ResponseWriter, r *http.Request) {
+	articles, err := dao.ListAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(articles)
+}
+
 func init() {
-	dao.Server = "localhost"
-	dao.Database = "test"
-
 	dao.Connect()
-
 }
 
 func main() {
