@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 
 	"gopkg.in/mgo.v2/bson"
@@ -35,4 +36,21 @@ func (m *ArticleDAO) ListAll() (Articles, error) {
 	var articles Articles
 	err := db.C(COLLECTION).Find(bson.M{}).All(&articles)
 	return articles, err
+}
+
+func (m *ArticleDAO) Get(id string) (Article, error) {
+	var article Article
+	
+	err := db.C(COLLECTION).FindId(bson.ObjectIdHex(id)).One(&article)
+	return article, err
+}
+
+func (m *ArticleDAO) Remove(id string) error {
+
+	if !bson.IsObjectIdHex(id) {
+		return errors.New("Invalid Id")
+	}
+
+	err := db.C(COLLECTION).RemoveId(bson.ObjectIdHex(id))
+	return err
 }
