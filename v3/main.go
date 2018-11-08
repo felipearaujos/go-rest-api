@@ -26,56 +26,52 @@ func createArticle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&article)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if handleError(err, w) {
 		return
 	}
 
 	article.Id = bson.NewObjectId()
 	err = articleDAO.Insert(article)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if !handleError(err, w) {
+		json.NewEncoder(w).Encode(article)
 	}
-
-	json.NewEncoder(w).Encode(article)
 }
 
 func allArticles(w http.ResponseWriter, r *http.Request) {
 	articles, err := articleDAO.ListAll()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if !handleError(err, w) {
+		json.NewEncoder(w).Encode(articles)
 	}
-
-	json.NewEncoder(w).Encode(articles)
 }
 
 func getArticle(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	article, err := articleDAO.Get(params["id"])
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if !handleError(err, w) {
+		json.NewEncoder(w).Encode(article)
 	}
-
-	json.NewEncoder(w).Encode(article)
 }
 
 func deleteArticle(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	err := articleDAO.Remove(params["id"])
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+	handleError(err, w)
 }
 
 func init() {
 	articleDAO.Connect()
+}
+
+func handleError(err error, w http.ResponseWriter) bool {
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return true
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return false
 }
 
 func main() {
