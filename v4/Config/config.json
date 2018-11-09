@@ -1,0 +1,6 @@
+{
+    "mongo": {
+        "server": "localhost",
+        "database": "articles_db"
+    }
+}
