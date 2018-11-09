@@ -22,8 +22,9 @@ Same as v2 just with new packages organization and some reusable functions
 
 ### V4
 
+```sh
 gorilla/mux - Rest
 encoding/json
 mgo.v2/bson
 spf13/viper
-
+```
