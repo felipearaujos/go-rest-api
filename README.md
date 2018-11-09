@@ -1,4 +1,4 @@
-# Dillinger
+# GoLang.RestAPI
 
 Rest API POC using golang.
 
